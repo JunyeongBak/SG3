@@ -1,13 +1,15 @@
-FROM pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime
+FROM ubuntu:22.04
 
 WORKDIR /SG3_tune
-
-COPY requirements.txt requirements.txt
-
-RUN apt-get update && apt-get upgrade -y
-
-RUN pip install -r requirements.txt
-
 EXPOSE 8888
 
-ENTRYPOINT [ "jupyter", "lab", "--ip=0.0.0.0", "--allow-root", "--no-browser" ]
+COPY requirements.txt requirements.txt
+COPY sg3_install.py /SG3_tune/sg3_install.py
+COPY sg3.py /SG3_tune/sg3.py
+
+RUN apt-get update && \
+    apt-get install -y git python3.9 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+CMD ["python3", "sg3_install.py"]
