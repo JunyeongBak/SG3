@@ -1,15 +1,8 @@
 version: '3.8'
 services:
-  jupyter-lab:
+  sg3_tune:
     build: ./SG3_tune
     ports:
       - "8888:8888"
     volumes:
       - ./SG3_tune:/SG3_tune
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
