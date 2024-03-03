@@ -17,6 +17,20 @@ parser.add_argument('--pickle', type=str, help='https://api.ngc.nvidia.com/v2/mo
 parser.add_argument('--source', type=str, help='원본 데이터셋 폴더')
 parser.add_argument('--dest', type=str, help='리사이즈 결과물 데이터셋 zip 파일명')
 parser.add_argument('--resolution', type=str, help='리사이즈 해상도')
+
+parser.add_argument('--outdir', type=str, help='결과물 저장되는 폴더명')
+parser.add_argument('--cfg', type=str, help='stylegan3-t')
+parser.add_argument('--data', type=str, help='datasets_256x256.zip')
+parser.add_argument('--gpus', type=int, help='1')
+parser.add_argument('--batch', type=int, help='32')
+parser.add_argument('--batch-gpu', type=int, help='32')
+parser.add_argument('--gamma', type=int, help='4')
+parser.add_argument('--mirror', type=int, help='1')
+parser.add_argument('--kimg', type=int, help='5000')
+parser.add_argument('--snap', type=int, help='4')
+parser.add_argument('--resume', type=str, help='https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl')
+parser.add_argument('--cbase', type=int, help='16384')
+
 args = parser.parse_args()
 
 
@@ -42,6 +56,7 @@ def inference_image(outdir:str = "out", trunc:int = 1, seeds:int = 2, pickle:str
 def make_datasets(source:str = gv_datasets, dest:str = 'ffhq-256x256', resolution='256x256'):
     """✨데이터셋 리사이징"""
     os_name = platform.system()
+    os.makedirs('./datasets', exist_ok=True)
     if os_name == 'Windows':
         command = f'docker run --gpus all -it --rm -v %cd%:/scratch --workdir /scratch -e HOME=/scratch stylegan3 python ./stylegan3/dataset_tool.py --source={source} --dest=datasets/{dest}.zip --resolution={resolution}'
     elif os_name == 'Linux':
@@ -51,13 +66,13 @@ def make_datasets(source:str = gv_datasets, dest:str = 'ffhq-256x256', resolutio
     
     subprocess.run(command, shell=True)
 
-def fine_tuning(outdir:str = "pickle_out"):
+def fine_tuning(outdir:str = "pickle_out", cfg:str ="stylegan3-t", data:str = "datasets_256x256.zip", gpus:int = 1, batch:int = 32, batch_gpu:int = 32, gamma:int = 4, mirror:int = 1, kimg:int = 5000, snap:int = 4, resume:str = "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl", cbase:int = 16384):
     """✨파인튜닝"""
     os_name = platform.system()
     if os_name == 'Windows':
-        command = f'docker run --gpus all -it --rm -v %cd%:/scratch --workdir /scratch -e HOME=/scratch stylegan3 python ./stylegan3/train.py --outdir={outdir} --cfg=stylegan3-t --data=/step1step2/input_2023090601H25M43S_256x256/datasets_256x256.zip --gpus=1 --batch=32 --batch-gpu=32 --gamma=4 --mirror=1 --kimg=5000 --snap=4 --resume=/step1step2/KHJ_20230905.pkl --cbase=16384'
+        command = f'docker run --gpus all -it --rm -v %cd%:/scratch --workdir /scratch -e HOME=/scratch stylegan3 python ./stylegan3/train.py --outdir={outdir} --cfg={cfg} --data=datasets/{data} --gpus={gpus} --batch={batch} --batch-gpu={batch_gpu} --gamma={gamma} --mirror={mirror} --kimg={kimg} --snap={snap} --resume={resume} --cbase={cbase}'
     elif os_name == 'Linux':
-        command = f'docker run --gpus all -it --rm --user $(id -u):$(id -g) -v `pwd`:/scratch --workdir /scratch -e HOME=/scratch stylegan3 python ./stylegan3/train.py --outdir=/step1step2/train_output_20230906 --cfg=stylegan3-t --data=/step1step2/input_2023090601H25M43S_256x256/datasets_256x256.zip --gpus=1 --batch=32 --batch-gpu=32 --gamma=4 --mirror=1 --kimg=5000 --snap=4 --resume=/step1step2/KHJ_20230905.pkl --cbase=16384'
+        command = f'docker run --gpus all -it --rm --user $(id -u):$(id -g) -v `pwd`:/scratch --workdir /scratch -e HOME=/scratch stylegan3 python ./stylegan3/train.py --outdir={outdir} --cfg={cfg} --data=datasets/{data} --gpus={gpus} --batch={batch} --batch-gpu={batch_gpu} --gamma={gamma} --mirror={mirror} --kimg={kimg} --snap={snap} --resume={resume} --cbase={cbase}'
     else:
         raise ValueError('Unsupported OS')
     
@@ -127,7 +142,50 @@ if __name__ == "__main__":
         make_datasets(source=lc_source, dest=lc_dest, resolution=lc_resolution)
     elif answer == 3:
         print("✨train(파인튜닝) 섹션")
-        pass
+        if args.outdir or args.cfg or args.data or args.gpus or args.batch or args.batch_gpu or args.gamma or args.mirror or args.kimg or args.snap or args.resume or args.cbase:
+            print("args를 입력하셔서 자동 생성 중...")
+            lc_outdir = args.outdir if args.outdir else "pickle_out"
+            lc_cfg = args.cfg if args.cfg else "stylegan3-t"
+            lc_data = args.data if args.data else "datasets_256x256.zip"
+            lc_gpus = int(args.gpus) if args.gpus else 1
+            lc_batch = int(args.batch) if args.batch else 32
+            lc_batch_gpu = int(args.batch_gpu) if args.batch_gpu else 32
+            lc_gamma = int(args.gamma) if args.gamma else 4
+            lc_mirror = int(args.mirror) if args.mirror else 1
+            lc_kimg = int(args.kimg) if args.kimg else 5000
+            lc_snap = int(args.snap) if args.snap else 4
+            lc_resume = args.resume if args.resume else "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl"
+            lc_cbase = int(args.cbase) if args.cbase else 16384
+        else:
+            print("파인튜닝을 시작합니다. 각 항목을 입력하세요.")
+            try:
+                lc_outdir = input("\033[92moutdir(결과물 저장되는 폴더명): \033[0m").strip()
+                lc_outdir = lc_outdir if lc_outdir else "pickle_out"
+                lc_cfg = input("\033[92mcfg(stylegan3-t): \033[0m").strip()
+                lc_cfg = lc_cfg if lc_cfg else "stylegan3-t"
+                lc_data = input("\033[92mdata(datasets_256x256.zip): \033[0m").strip()
+                lc_data = lc_data if lc_data else "datasets_256x256.zip"
+                lc_gpus = input("\033[92mgpus(1): \033[0m").strip()
+                lc_gpus = int(lc_gpus) if lc_gpus else 1
+                lc_batch = input("\033[92mbatch(32): \033[0m").strip()
+                lc_batch = int(lc_batch) if lc_batch else 32
+                lc_batch_gpu = input("\033[92mbatch_gpu(32): \033[0m").strip()
+                lc_batch_gpu = int(lc_batch_gpu) if lc_batch_gpu else 32
+                lc_gamma = input("\033[92mgamma(4): \033[0m").strip()
+                lc_gamma = int(lc_gamma) if lc_gamma else 4
+                lc_mirror = input("\033[92mmirror(1): \033[0m").strip()
+                lc_mirror = int(lc_mirror) if lc_mirror else 1
+                lc_kimg = input("\033[92mkimg(5000): \033[0m").strip()
+                lc_kimg = int(lc_kimg) if lc_kimg else 5000
+                lc_snap = input("\033[92msnap(4): \033[0m").strip()
+                lc_snap = int(lc_snap) if lc_snap else 4
+                lc_resume = input("\033[92mresume: \033[0m").strip()
+                lc_resume = lc_resume if lc_resume else "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl"
+                lc_cbase = input("\033[92mcbase(16384): \033[0m").strip()
+                lc_cbase = int(lc_cbase) if lc_cbase else 16384
+            except Exception as e:
+                print(e)
+        fine_tuning(outdir=lc_outdir, cfg=lc_cfg, data=lc_data, gpus=lc_gpus, batch=lc_batch, batch_gpu=lc_batch_gpu, gamma=lc_gamma, mirror=lc_mirror, kimg=lc_kimg, snap=lc_snap, resume=lc_resume, cbase=lc_cbase)
     else:
         print("🚀프로그램을 종료합니다.")
         time.sleep(0.5)
