@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 WORKDIR /SG3_tune
 EXPOSE 8888
+ENV PATH="/usr/local/bin:${PATH}"
 
 COPY requirements.txt requirements.txt
 COPY sg3_install.py /SG3_tune/sg3_install.py
@@ -23,5 +24,5 @@ RUN echo \
 
 RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-ENTRYPOINT [ "/usr/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT [ "docker-entrypoint.sh"]
 
