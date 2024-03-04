@@ -18,6 +18,7 @@ parser.add_argument('--source', type=str, help='원본 데이터셋 폴더')
 parser.add_argument('--dest', type=str, help='리사이즈 결과물 데이터셋 zip 파일명')
 parser.add_argument('--resolution', type=str, help='리사이즈 해상도')
 
+# parser.add_argument('--outdir', type=str, help='결과물 저장되는 폴더명')
 parser.add_argument('--cfg', type=str, help='stylegan3-t')
 parser.add_argument('--data', type=str, help='datasets_256x256.zip')
 parser.add_argument('--gpus', type=int, help='1')
@@ -190,4 +191,3 @@ if __name__ == "__main__":
         time.sleep(0.5)
         print("🚀Bye-Bye")
         time.sleep(1)
-            
