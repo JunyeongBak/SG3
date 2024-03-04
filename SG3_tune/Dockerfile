@@ -7,7 +7,7 @@ COPY requirements.txt requirements.txt
 COPY sg3_install.py /SG3_tune/sg3_install.py
 COPY sg3.py /SG3_tune/sg3.py
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod 555 /usr/local/bin/docker-entrypoint.sh
 
 
 # 필수 패키지 설치
