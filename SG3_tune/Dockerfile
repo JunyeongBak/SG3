@@ -3,6 +3,8 @@ FROM ubuntu:22.04
 WORKDIR /SG3_tune
 EXPOSE 8888
 
+SHELL ["/bin/bash", "-c"]
+
 RUN mkdir -p /usr/local/bin
 ENV PATH="/usr/local/bin:${PATH}"
 ENV TZ=Asia/Seoul
@@ -13,10 +15,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY requirements.txt requirements.txt
-COPY sg3_install.py sg3_install.py
-COPY sg3.py sg3.py
-COPY entrypoint.sh entrypoint.sh
+COPY requirements.txt /requirements.txt
+COPY sg3_install.py /sg3_install.py
+COPY sg3.py /sg3.py
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 
 # 필수 패키지 설치
@@ -32,5 +34,6 @@ RUN echo \
 
 RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-RUN chmod 755 entrypoint.sh
+RUN chmod 755 /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
+
