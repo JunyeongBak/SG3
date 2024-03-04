@@ -4,8 +4,7 @@ from datetime import datetime
 import argparse
 import os
 import time
-
-gv_datasets = os.path.join(os.getcwd(), 'input', 'Sample', 'Sample', '01.원천데이터', 'A')
+gv_datasets = os.path.join(os.getcwd(), 'input', 'Sample', 'Sample', '01.원천데이터', '/')
 
 # args parsing
 parser = argparse.ArgumentParser(description='SG3 code')
@@ -18,18 +17,17 @@ parser.add_argument('--source', type=str, help='원본 데이터셋 폴더')
 parser.add_argument('--dest', type=str, help='리사이즈 결과물 데이터셋 zip 파일명')
 parser.add_argument('--resolution', type=str, help='리사이즈 해상도')
 
-# parser.add_argument('--outdir', type=str, help='결과물 저장되는 폴더명')
 parser.add_argument('--cfg', type=str, help='stylegan3-t')
 parser.add_argument('--data', type=str, help='datasets_256x256.zip')
 parser.add_argument('--gpus', type=int, help='1')
 parser.add_argument('--batch', type=int, help='32')
 parser.add_argument('--batch-gpu', type=int, help='32')
-parser.add_argument('--gamma', type=int, help='4')
-parser.add_argument('--mirror', type=int, help='1')
+parser.add_argument('--gamma', type=float, help='2')
+parser.add_argument('--mirror', type=bool, help='False')
 parser.add_argument('--kimg', type=int, help='5000')
 parser.add_argument('--snap', type=int, help='4')
 parser.add_argument('--resume', type=str, help='https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl')
-parser.add_argument('--cbase', type=int, help='16384')
+parser.add_argument('--cbase', type=int, help='32768')
 
 args = parser.parse_args()
 
@@ -66,7 +64,7 @@ def make_datasets(source:str = gv_datasets, dest:str = 'ffhq-256x256', resolutio
     
     subprocess.run(command, shell=True)
 
-def fine_tuning(outdir:str = "pickle_out", cfg:str ="stylegan3-t", data:str = "datasets_256x256.zip", gpus:int = 1, batch:int = 32, batch_gpu:int = 32, gamma:int = 4, mirror:int = 1, kimg:int = 5000, snap:int = 4, resume:str = "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl", cbase:int = 16384):
+def fine_tuning(outdir:str = "pickle_out", cfg:str ="stylegan3-t", data:str = "datasets_256x256.zip", gpus:int = 1, batch:int = 32, batch_gpu:int = 32, gamma:float = 4.0, mirror:bool = False, kimg:int = 5000, snap:int = 4, resume:str = "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl", cbase:int = 32768):
     """✨파인튜닝"""
     os_name = platform.system()
     if os_name == 'Windows':
@@ -81,7 +79,7 @@ def fine_tuning(outdir:str = "pickle_out", cfg:str ="stylegan3-t", data:str = "d
 if __name__ == "__main__":
     while True:
         clear_screen()
-        print("\033[93m📢어떤 작업을 원하시나요?\n① inference(생성)\n② train(파인튜닝)\n③ 종료\033[0m")
+        print("\033[93m📢어떤 작업을 원하시나요?\n① inference(생성)\n② 데이터셋 리사이징\n③ train(파인튜닝)\n④ 종료\033[0m")
         try:
             answer = input("\033[92m정수만 입력하세요: \033[0m").strip()
         except Exception as e:
@@ -174,15 +172,15 @@ if __name__ == "__main__":
                 lc_gamma = input("\033[92mgamma(4): \033[0m").strip()
                 lc_gamma = int(lc_gamma) if lc_gamma else 4
                 lc_mirror = input("\033[92mmirror(1): \033[0m").strip()
-                lc_mirror = int(lc_mirror) if lc_mirror else 1
+                lc_mirror = bool(lc_mirror) if lc_mirror else False
                 lc_kimg = input("\033[92mkimg(5000): \033[0m").strip()
                 lc_kimg = int(lc_kimg) if lc_kimg else 5000
                 lc_snap = input("\033[92msnap(4): \033[0m").strip()
                 lc_snap = int(lc_snap) if lc_snap else 4
                 lc_resume = input("\033[92mresume: \033[0m").strip()
                 lc_resume = lc_resume if lc_resume else "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhqu-256x256.pkl"
-                lc_cbase = input("\033[92mcbase(16384): \033[0m").strip()
-                lc_cbase = int(lc_cbase) if lc_cbase else 16384
+                lc_cbase = input("\033[92mcbase(32768): \033[0m").strip()
+                lc_cbase = int(lc_cbase) if lc_cbase else 32768
             except Exception as e:
                 print(e)
         fine_tuning(outdir=lc_outdir, cfg=lc_cfg, data=lc_data, gpus=lc_gpus, batch=lc_batch, batch_gpu=lc_batch_gpu, gamma=lc_gamma, mirror=lc_mirror, kimg=lc_kimg, snap=lc_snap, resume=lc_resume, cbase=lc_cbase)
@@ -191,3 +189,4 @@ if __name__ == "__main__":
         time.sleep(0.5)
         print("🚀Bye-Bye")
         time.sleep(1)
+            
