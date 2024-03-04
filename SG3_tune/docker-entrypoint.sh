@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+exec \"$@\"
+
 echo "Docker 데몬을 시작합니다."
 systemctl --user start docker-desktop
 docker --version
